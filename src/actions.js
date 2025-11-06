@@ -1,10 +1,6 @@
-/*
-
-https://hackage.haskell.org/package/telegram-bot-api-7.4.4/docs/Telegram-Bot-API-Methods-RestrictChatMember.html
-Date when restrictions will be lifted for the user, unix time. If user is restricted for more 
-than 366 days or less than 30 seconds from the current time, 
-they are considered to be restricted forever.
-
+/**
+ * Actions (keyboard actions) are only available on a per message basis in the group Api3
+ * Administrators which is a private group with a few manually added admins.
  */
 
 const { bot } = require('./bot');
@@ -14,7 +10,7 @@ const { PERMISSIONS_TIMEOUT } = require('./permissions');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 
 /**
- * Timeout 24 hours
+ * Timeout a user for 24 hours.
  * @param {*} bot
  */
 async function startActionTimeout24() {
@@ -51,7 +47,7 @@ async function startActionTimeout24() {
 }
 
 /**
- * Timeout forever
+ * Timeout a user forever.
  * @param {*} bot
  */
 async function startActionTimeoutForever() {
@@ -87,7 +83,7 @@ async function startActionTimeoutForever() {
 }
 
 /**
- * Clear timeout
+ * Clears any timeout that may have been applied to a user.
  * @param {*} bot
  */
 async function startActionTimeoutClear() {
@@ -124,7 +120,7 @@ async function startActionTimeoutClear() {
 }
 
 /**
- * Restore message
+ * Restore message from disk storage. Any timeout applied to the user is removed.
  * @param {*} bot
  */
 async function startActionRestoreMessage() {
@@ -165,6 +161,13 @@ async function startActionRestoreMessage() {
   });
 }
 
+/**
+ * Gets a message that has been stored on disk for a max of 7.1 days.
+ * @param {*} ctx
+ * @param {*} action
+ * @param {*} msgId
+ * @returns
+ */
 async function getMessageFromDisk(ctx, action, msgId) {
   try {
     return JSON.parse(fs.readFileSync(`../telegram-messages/${msgId}.json`));
