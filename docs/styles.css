@@ -1,0 +1,18 @@
+.btn {
+  width: 100%;
+  font-size: large;
+  border: solid 1px grey;
+  padding: 5px 10px 5px 20px;
+  margin-bottom: 20px;
+  border-radius: 0.3em;
+  cursor: pointer;
+}
+.arrow {
+  margin-top: 5px;
+  font-size: large;
+}
+
+.title {
+  float: right;
+  margin-right: 30px;
+}

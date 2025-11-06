@@ -1,0 +1,18 @@
+{
+  "development": {
+    "token": "<telegram-bot-token>",
+    "keys": {
+      "openrouter": "<token>"
+    },
+    "chats": { "main": <id>, "admin": <id> },
+    "immunity": ["<telegram-username>", "..."]
+  },
+  "production": {
+    "token": "<telegram-bot-token>",
+    "keys": {
+      "openrouter": "<token>"
+    },
+    "chats": { "main": <id>, "admin": <id> },
+    "immunity": ["<telegram-username>", "..."]
+  }
+}

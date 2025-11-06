@@ -1,0 +1,11 @@
+No scams, spam or advertising
+No solicitations
+No posts seeking employment or employees
+No excessive profanity
+No bad faith arguments, concern trolling, etc.
+No Api3 token price talk
+
+The Guardian Bot uses AI to review all messages. If it feels you are ignoring the rules:
+ - Your message will be deleted.
+ - You will be placed into an immediate timeout for 60 minutes. 
+ - Further review by an admin may result in a forever timeout or your account being banned.

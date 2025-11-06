@@ -1,0 +1,32 @@
+{
+  "name": "api3-telegram-bot",
+  "version": "1.0.0",
+  "description": "Api3 Telegram bot",
+  "license": "UNLICENSED",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "pnpm prettier:check && eslint . --ext .js,ts",
+    "prettier": "prettier --write \"./**/*.{js,ts,md,json,json.example}\"",
+    "prettier:check": "prettier --check \"./**/*.{js,ts,md,json,json.example}\"",
+    "---prod---": "",
+    "start-prod-pm2": "NODE_ENV=production pm2 start src/index.js --name telegram",
+    "stop-prod-pm2": "NODE_ENV=production pm2 stop telegram",
+    "restart-prod-pm2": "NODE_ENV=production pm2 restart telegram",
+    "delete-prod-pm2": "NODE_ENV=production pm2 delete telegram",
+    "---dev---": "",
+    "start-dev": "NODE_ENV=development node --trace-warnings src/index.js",
+    "start-dev-pm2": "NODE_ENV=development pm2 start src/index.js --name telegram-dev",
+    "stop-dev-pm2": "NODE_ENV=development pm2 stop telegram-dev",
+    "restart-dev-pm2": "NODE_ENV=development pm2 restart telegram-dev",
+    "delete-dev-pm2": "NODE_ENV=development pm2 delete telegram-dev"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3"
+  },
+  "author": "Api3"
+}
