@@ -1,3 +1,10 @@
+/**
+ * This file creates the bot for other files to use including setting the bot options such
+ * actions. The bot is exported.
+ *
+ * It also purges messages that are stored on disk once they exceed 7.1 days in age.
+ */
+
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +14,7 @@ const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env
 let bot = undefined;
 
 if (!bot) {
-  // Initialize bot with bot token, bot is used to talk to the Telegram API via Telegraf
+  // Initialize bot with bot token, bot is used to talk to the Telegram API via Telegraf.
   bot = new Telegraf(CONFIG.token);
   console.info('The bot is ready.');
 }
@@ -36,7 +43,7 @@ setInterval(function () {
   } catch (err) {
     console.error('Error reading directory:', err);
   }
-}, 3.6e6); // Executes every hour
+}, 3.6e6); // Interval executes every hour
 
 module.exports = {
   bot
