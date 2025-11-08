@@ -162,6 +162,43 @@ async function startActionRestoreMessage() {
 }
 
 /**
+ * Ban a user.
+ * @param {*} bot
+ */
+async function startActionBanUser() {
+  bot.action(/^action_ban_user-(\d+)/, async (ctx) => {
+    try {
+      // console.log('>>> action_ban_user');
+      const msgId = ctx.match[1];
+
+      // Get the message from disk
+      // Without the message we cannot proceed
+      const msg = await getMessageFromDisk(ctx, 'Ban User', msgId);
+      if (!msg) return;
+
+      const userId = msg.from.id;
+      const chatId = CONFIG.chats.main;
+
+      // Clear timeout
+      const res = await bot.telegram.banChatMember(chatId, userId);
+      if (!res) throw new Error(`Failed to ban user for ${msg.from.first_name} / ${userId}`);
+
+      // Send message to admin chat
+      const reply = `User (${msg.from.first_name} / ${userId}) banned. Use the Telgram mobile app to un-ban a user. See the [docs](https://api3dao.github.io/api3-social-docs/).`;
+      ctx.answerCbQuery(reply);
+      ctx.reply(reply);
+    } catch (error) {
+      // Send message to admin chat
+      ctx.answerCbQuery(`FAILED`);
+      ctx.reply(`User ban failed. Please notify bot developer.`);
+      // Log error
+      logger.error(error.message);
+      logger.error(error.stack);
+    }
+  });
+}
+
+/**
  * Gets a message that has been stored on disk for a max of 7.1 days.
  * @param {*} ctx
  * @param {*} action
@@ -183,5 +220,6 @@ module.exports = {
   startActionTimeout24,
   startActionTimeoutForever,
   startActionTimeoutClear,
-  startActionRestoreMessage
+  startActionRestoreMessage,
+  startActionBanUser
 };

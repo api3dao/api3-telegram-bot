@@ -8,7 +8,8 @@ const {
   startActionTimeout24,
   startActionTimeoutForever,
   startActionTimeoutClear,
-  startActionRestoreMessage
+  startActionRestoreMessage,
+  startActionBanUser
 } = require('./actions');
 const fs = require('fs');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
@@ -72,7 +73,8 @@ Message:\n${ctx.update.message.text}`,
             [
               Markup.button.callback(`Clear Timeout`, `action_timeout_clear-${ctx.update.message.message_id}`),
               Markup.button.callback(`Restore Message`, `action_restore_message-${ctx.update.message.message_id}`)
-            ]
+            ],
+            [Markup.button.callback(`Ban User`, `action_ban_user-${ctx.update.message.message_id}`)]
           ])
         )
         .catch((error) => console.error('Error AI admin keyboard response:', error));
@@ -140,6 +142,7 @@ startActionTimeout24();
 startActionTimeoutForever();
 startActionTimeoutClear();
 startActionRestoreMessage();
+startActionBanUser();
 
 async function createMessageDiskObj(ctx) {
   const obj = {
