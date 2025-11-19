@@ -15,17 +15,18 @@ module.exports = {
   warn: (message) => log('warn', message),
   error: (message) => {
     log('error', message);
-
-    // Add to admin group
+    // Add to Logging channel
     if (bot && canPost) {
-      // Allow further logging in 2 minutes, prevent excessive logging to admin group
+      // Allow further logging in 10 seconds, prevent excessive logging to logging group
       setTimeout(() => {
         canPost = true;
-      }, 120000);
+      }, 3000);
 
       canPost = false;
       try {
-        bot.telegram.sendMessage(CONFIG.chats.admin, `Logger error for development.\n${message}`);
+        bot.telegram
+          .sendMessage(CONFIG.chats.logging, `Logger error for development.\n------------------\n${message}`)
+          .catch((error) => console.error('Logger error:', error));
       } catch (err) {
         console.error(err);
       }
