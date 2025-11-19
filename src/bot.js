@@ -6,16 +6,18 @@
  */
 
 const { Telegraf } = require('telegraf');
+//const { useNewReplies } = require('telegraf/future');
 const fs = require('fs');
 const path = require('path');
-const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
+const BOT_TOKEN = JSON.parse(fs.readFileSync('./config.json', 'utf-8')).bot_token;
 
 // Initialize bot with your bot token, bot is used to talk to the Telegram API via Telegraf
 let bot = undefined;
 
 if (!bot) {
   // Initialize bot with bot token, bot is used to talk to the Telegram API via Telegraf.
-  bot = new Telegraf(CONFIG.token);
+  bot = new Telegraf(BOT_TOKEN);
+  //bot.use(useNewReplies());
   console.info('The bot is ready.');
 }
 
