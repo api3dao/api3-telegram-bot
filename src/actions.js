@@ -1,13 +1,9 @@
-/**
- * Actions (keyboard actions) are only available on a per message basis in the group Api3
- * Administrators which is a private group with a few manually added admins.
- */
-
 const { bot } = require('./bot');
 const { newMessageMain, newMessageAdmin } = require('./message-queue');
 const fs = require('fs');
 const logger = require('./logger');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
+// Store of welcome message IDs for users that have joined but need to confirm they are human
 let WELCOME_MSG_IDS = {}; // {userId:<id>, msgId:<msgId}
 
 /**
@@ -48,7 +44,7 @@ async function startActionTimeout24() {
 }
 
 /**
- * Timeout a user forever.
+ * Timeout a user forever, makes them read only.
  */
 async function startActionTimeoutForever() {
   bot.action(/^action_timeout_forever-(\d+)/, async (ctx) => {
@@ -134,10 +130,13 @@ async function startActionRestoreMessage() {
       const chatId = CONFIG.chats.main;
 
       // Send user's message back to the main chat
-      bot.telegram.sendMessage(
-        chatId,
-        `An admin told me to re-post a message I had removed.\n-----\nFrom username: @${msg.from.username} / ${msg.from.first_name}\n${msg.text}`
+      newMessageMain(
+        `<i>An admin told me to re-post a message I had removed earlier, my apologies.</i>\n-----\nFrom: ${msg.from.first_name} @${msg.from.username} \n${msg.text}`
       );
+      /*bot.telegram.sendMessage(
+        chatId,
+        `<i>An admin told me to re-post a message I had removed earlier, my apologies.<i>\n-----\nFrom user: ${msg.from.first_name} @${msg.from.username} \n${msg.text}`
+      );*/
 
       // Clear timeout
       await bot.telegram.restrictChatMember(chatId, userId, { permissions: { can_send_messages: true } });
@@ -157,7 +156,7 @@ async function startActionRestoreMessage() {
 }
 
 /**
- * Ban a user.
+ * Ban a user, they are not kicked from the group but are moved to the "removed users" list.
  */
 async function startActionBanUser() {
   bot.action(/^action_ban_user-(\d+)/, async (ctx) => {
@@ -191,7 +190,8 @@ async function startActionBanUser() {
 }
 
 /**
- * Ban a user.
+ * Un-ban a user (kicked), they are kicked from the group. If they are in the "removed users" list then
+ * they are removed from it. Kicked users can rejoin the group by themselves.
  */
 async function startActionUnbanUser() {
   bot.action(/^action_unban_user-(\d+)/, async (ctx) => {
@@ -225,8 +225,8 @@ async function startActionUnbanUser() {
 }
 
 /**
- * Action that welcomes a new user
- * The welcome message has a life of three minutes.
+ * Action that (confirms) welcomes a new user
+ * The welcome message has a life of 1 minute.
  */
 async function startActionWelcome() {
   bot.action(/^action_welcome-(\d+)/, async (ctx) => {
@@ -253,8 +253,10 @@ async function startActionWelcome() {
       // Remove the msgId for the user from WELCOME_MSG_IDS
       delete WELCOME_MSG_IDS[userId];
 
-      const name = from.first_name || from.username;
-      newMessageMain(`Welcome @${name}! Its great that you are here. You can now send messages to the group.`);
+      const name = from.first_name || `@${from.username}`;
+      newMessageMain(
+        `Welcome ${name}! Its great that you are here. You can now send messages to the group. Please read the /chatrules`
+      );
 
       // Send message to main group
       const reply = `${from.first_name} can now send and read messages.`;
@@ -284,18 +286,6 @@ async function getMessageFromDisk(ctx, action, msgId) {
     return undefined;
   }
 }
-
-/*async function deleteWelcomeMessage(msgId) {
-  try {
-    // If the message does not exist the catch block fires
-    const res = await bot.telegram.deleteMessage(CONFIG.chats.main, msgId);
-    console.log('RES delete msg:', res);
-  } catch (error) {
-    console.error(error);
-    // If the message failed to be removed then the user had already identified themselves as a human
-    return;
-  }
-}*/
 
 module.exports = {
   startActionTimeout24,

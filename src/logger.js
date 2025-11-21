@@ -15,9 +15,10 @@ module.exports = {
   warn: (message) => log('warn', message),
   error: (message) => {
     log('error', message);
-    // Add to Logging channel
+
+    // Add to Logging group in Telegram for development environment only
     if (bot && canPost) {
-      // Allow further logging in 10 seconds, prevent excessive logging to logging group
+      // Allow further logging in 3 seconds, prevent excessive logging to logging group
       setTimeout(() => {
         canPost = true;
       }, 3000);

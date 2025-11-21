@@ -13,51 +13,49 @@ const {
   startActionUnbanUser,
   startActionWelcome
 } = require('./actions');
-const { setupWelcome } = require('./welcome');
-const { startHelpCommand } = require('./commands');
+//const { processNewMember } = require('./welcome');
+const { startAllowedLinksCommand, startChatRulesCommand } = require('./commands');
 const fs = require('fs');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 
-// COMMANDS: If any are needed, DECLARE ALL COMMANDS HERE, before any other event handlers
-startHelpCommand();
+// COMMANDS: Declare commands here before any other event handlers
+startAllowedLinksCommand();
+startChatRulesCommand();
 
 /**
  * Handles incoming text messages
  * If the message violates rules, put the user in timeout and delete the message
- * Then notify the user about the timeout
+ * Then notify the user
  * It is important that this is placed *after* all other specific command handlers
  * But can come before the action handlers
  * @param {Telegraf.Context} ctx - The Telegraf context object
  */
 bot.on(message('text'), async (ctx) => {
   try {
-    // If an unauthorized group is using this bot, tell them to remove it
-    if (!Object.values(CONFIG.chats).includes(ctx.update.message.chat.id)) {
-      logger.info(`>>> ${ctx.update.message.chat.id} not an authorized chatId.`);
-      try {
-        ctx.sendMessage(
-          'This is a private bot for use by the organization that created it. It will just cause chatter if you add it to your own group. So please do not use this bot and never trust a bot you do not know.'
-        );
-      } catch (error) {
-        return;
-      }
+    const chatId = ctx.update.message.chat.id;
+    console.log(`Received message from ${ctx.update.message.from.first_name}: ${ctx.update.message.text}`);
+
+    // If an unauthorized non Api3 group is using this bot, skip the message with notice
+    if (!Object.values(CONFIG.chats).includes(chatId)) {
+      ctx
+        .reply('This group is not authorized to use this bot. Please contact your Telegram administrator. -100')
+        .catch((error) => {
+          console.error(`-100: ${error.message}`);
+        });
       return;
     }
-
-    // MISS ROSE SHOULD BE DELETING COMMANDS FOR NOW
-    // Delete any commands that arrives here
-    /*if (ctx.update.message.text.startsWith('/')) {
-      // The message may not exist if there was a bot restart
-      ctx.deleteMessage().catch((error) => {
-        logger.error('Error deleting message for / (harmless):', error);
-      });
+    // For Api3 groups, only process messages from the main chat
+    else if (chatId !== CONFIG.chats.main) {
+      // Message is not from the main chat, ignore it
       return;
-    }*/
+    }
 
     // If the user has immunity, skip processing
     if (CONFIG.immunity.includes(ctx.update.message.from.username)) {
       return;
     }
+
+    console.log(`Processing message from ${ctx.update.message.from.first_name}`);
 
     // Check message against AI rules
     const returnedArray = await handleMessage(ctx.update.message.text);
@@ -104,7 +102,7 @@ bot.on(message('text'), async (ctx) => {
         logger.error('Error deleting user message (harmless):', error);
       });
 
-      // Timeout user 60 minutes, which is 24 hours
+      // Timeout user 24 hours
       const timeoutMinutes = 1440; // Unix timestamp for the timeout in minutes
       const until_date = Math.floor(Date.now() / 1000) + timeoutMinutes * 60;
       await ctx.telegram.restrictChatMember(ctx.update.message.chat.id, ctx.update.message.from.id, {
@@ -112,9 +110,11 @@ bot.on(message('text'), async (ctx) => {
         until_date: until_date
       });
 
-      // Reply to user in main group
-      newMessageMain(
-        `@${ctx.update.message.from.username} Sorry your post is on hold and in review.\nRules: click or enter /chatrules`
+      // Reply to user in main group about the timeout from AI check
+      // It does no good to add /chatrules to the message as the user is in timeout
+      await newMessageMain(
+        `<i>This message is removed after one minute.</i>\n-----\nSorry ${ctx.update.message.from.first_name} your post is on hold and in review by an admin.`,
+        60000
       );
     }
 
@@ -129,11 +129,37 @@ bot.on(message('text'), async (ctx) => {
 });
 
 /**
- * Capture new members event.
+ * Handle 'new_chat_members' event
  */
-bot.on('new_chat_members', async (ctx) => {
-  setupWelcome(ctx);
-});
+/*bot.on('new_chat_members', async (ctx) => {
+  // If an unauthorized group is using this bot
+  if (!Object.values(CONFIG.chats).includes(ctx.update.message.chat.id)) {
+    ctx
+      .reply('This group is not authorized to use this bot. Please contact your Telegram administrator. -400')
+      .catch((error) => {
+        console.error(`-400: ${error.message}`);
+      });
+    return;
+  }
+  processNewMember(ctx);
+});*/
+
+/**
+ * Handle 'left_chat_member' event to delete "User left the group" messages
+ */
+/*bot.on('left_chat_member', (ctx) => {
+  const chatId = ctx.update.message.chat.id;
+  const messageId = ctx.update.message.message_id;
+  // If an unauthorized group is using this bot
+  if (!Object.values(CONFIG.chats).includes(chatId)) {
+    // Do nothing the user (from a unauthorized group) is gone
+    return;
+  }
+  // removes the3 system message about user leaving the group
+  bot.telegram.deleteMessage(chatId, messageId).catch((error) => {
+    console.error(`Error deleting message: ${error.message}`);
+  });
+});*/
 
 // Start the Nodejs process via bot
 bot.launch();
@@ -155,6 +181,12 @@ startActionBanUser();
 startActionUnbanUser();
 startActionWelcome();
 
+/**
+ * Creates a message object to store on disk for later retrieval
+ * This message object is used when an admin wants to restore a message that was removed by the AI handler
+ * @param {*} ctx
+ * @returns
+ */
 async function createMessageDiskObj(ctx) {
   const obj = {
     message_id: ctx.message.message_id,
@@ -165,6 +197,13 @@ async function createMessageDiskObj(ctx) {
   return obj;
 }
 
+/**
+ * Creates the body of the AI notification message to admins
+ * This is the message that is sent to the admin group when a message is removed by the AI handler
+ * @param {*} ctx
+ * @param {*} returnedArray
+ * @returns
+ */
 async function getAiMessageBody(ctx, returnedArray) {
   return `Message was removed by the AI handler.
 ----------

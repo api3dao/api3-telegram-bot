@@ -1,0 +1,17 @@
+Be careful using links in your message. I am extremely judgemental and give timeouts at the drop of a hat.
+
+<b>1. Root Domains and All Subdomains (Api3 and General Platforms)</b>
+
+The URL must start with one of the following protocols and domains, or its protocol-less equivalent, and can include any path on that domain and all of its subdomains. 
+Example: <code>https://dao-docs.web.app/overview/dao-tracker.html</code>:
+     - https://api3.org/ 
+     - https://youtube.com/
+     - https://github.com/ 
+
+<b>2. Official API3 Social/Community Profiles (Specific Paths Only)</b>
+
+The URL must start with one of the following exact paths, or its protocol-less equivalent, to ensure it points only to the official profile and not other pages/subdomains on that site:
+     - https://x.com/api3dao
+     - https://twitter.com/api3dao
+     - https://medium.com/api3 
+     - https://t.me/API3DAO
