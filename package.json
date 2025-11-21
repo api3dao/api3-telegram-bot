@@ -9,6 +9,7 @@
     "prettier": "prettier --write \"./**/*.{js,ts,md,json,json.example}\"",
     "prettier:check": "prettier --check \"./**/*.{js,ts,md,json,json.example}\"",
     "---prod---": "",
+    "start-prod": "NODE_ENV=production node --trace-warnings src/index.js",
     "start-prod-pm2": "NODE_ENV=production pm2 start src/index.js --name telegram",
     "stop-prod-pm2": "NODE_ENV=production pm2 stop telegram",
     "restart-prod-pm2": "NODE_ENV=production pm2 restart telegram",

@@ -1,13 +1,11 @@
 const { bot } = require('./bot');
-const { Markup } = require('telegraf');
 const fs = require('fs');
 const logger = require('./logger');
 const { WELCOME_MSG_IDS } = require('./actions');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
-const RULES = fs.readFileSync('./src/rules.txt', 'utf-8');
 
-async function setupWelcome(ctx) {
-  //console.log('----- START setupNewUsers -----');
+async function processNewMember(ctx) {
+  //console.log('----- START processNewMember -----');
   ctx.update.message.new_chat_members.forEach(async (user) => {
     try {
       const userId = user.id;
@@ -23,10 +21,17 @@ async function setupWelcome(ctx) {
       // and not await bot.telegram.restrictChatMember
       await ctx.telegram.restrictChatMember(CONFIG.chats.main, user.id, { permissions: { can_send_messages: false } });
 
+      const inlineKeyboard = {
+        inline_keyboard: [[{ text: `Click here to prove you're human`, callback_data: `action_welcome-${userId}` }]]
+      };
       const res = await bot.telegram.sendMessage(
         CONFIG.chats.main,
         await getWelcomeMsgText(user.first_name, user.username),
-        Markup.inlineKeyboard([Markup.button.callback(`Click here to prove you're human`, `action_welcome-${userId}`)])
+        {
+          parse_mode: 'HTML',
+          disable_notification: true,
+          reply_markup: inlineKeyboard
+        }
       );
       // Add the msg id from action to WELCOME_MSG_IDS from actions.js for the message can be deleted
       // if the user clicks the "am human" button
@@ -57,7 +62,7 @@ async function deleteWelcomeMessage(msgId, user) {
     bot.telegram
       .deleteMessage(CONFIG.chats.main, Number(msgId))
       .then(async () => {
-        // Remove the msgId for the user from actions.js WELCOME_MSG_IDS
+        // Remove the msgId for the user from actions.js WELCOME_MSG_IDS json obj, may not exist
         delete WELCOME_MSG_IDS[user.id];
 
         // Kick the user from the group
@@ -73,12 +78,17 @@ async function deleteWelcomeMessage(msgId, user) {
   }
 }
 
+/**
+ * The text used in the welcome message
+ * @param {*} first
+ * @param {*} username
+ * @returns
+ */
 async function getWelcomeMsgText(first, username) {
-  return `Hey ${first} (@${username}). Are you human? You have one minute to prove it. Otherwise rejoin again later. 
------ Rules -----
-${RULES}`;
+  const name = first || `@${username}`;
+  return `Hey ${name}. Are you human? <b>You have 1 minute to prove it.</b> Otherwise rejoin again later.`;
 }
 
 module.exports = {
-  setupWelcome
+  processNewMember
 };
