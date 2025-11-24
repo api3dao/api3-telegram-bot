@@ -3,3 +3,4 @@ config.json
 prompt.txt
 
 **/.DS_Store
+**/ec2-instance.*
