@@ -4,7 +4,11 @@ const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env
 
 const log = (level, message) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [${level.toUpperCase()}]: ${message}`);
+  if (level === 'error') {
+    console.error(`[${timestamp}] [${level.toUpperCase()}]: ${message}`);
+  } else {
+    console.log(`[${timestamp}] [${level.toUpperCase()}]: ${message}`);
+  }
 };
 
 // To prevent runaway logging in the Telegram admin group
@@ -25,6 +29,7 @@ module.exports = {
 
       canPost = false;
       try {
+        // Send to logging group
         bot.telegram
           .sendMessage(CONFIG.chats.logging, `Logger error for development.\n------------------\n${message}`)
           .catch((error) => console.error('Logger error:', error));
