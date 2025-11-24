@@ -177,7 +177,7 @@ async function startActionBanUser() {
       if (!res) throw new Error(`Failed to ban user for ${msg.from.first_name} / ${userId}`);
 
       // Send message to admin chat
-      const reply = `User (${msg.from.first_name} / ${userId}) is banned. They cannot rejoin the group until they are unbanned.`;
+      const reply = `User (${msg.from.first_name} / ${userId}) is banned. They cannot rejoin the group until they are kicked.`;
       ctx.answerCbQuery(reply);
       newMessageAdmin(reply);
     } catch (error) {
