@@ -55,11 +55,9 @@ bot.on(message('text'), async (ctx) => {
       return;
     }
 
-    console.log(`Processing message from ${ctx.update.message.from.first_name}`);
-
     // Check message against AI rules
     const returnedArray = await handleMessage(ctx.update.message.text);
-    console.log(`AI returned: ${returnedArray}`);
+    console.log(`  >>> AI returned: ${returnedArray}`);
     // If rules were violated send message to admin group and timeout user
     if (returnedArray[0] === 'YES') {
       /**
