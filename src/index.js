@@ -36,17 +36,23 @@ bot.on(message('text'), async (ctx) => {
     console.log(`Received message from ${ctx.update.message.from.first_name}: ${ctx.update.message.text}`);
 
     // If an unauthorized non Api3 group is using this bot, skip the message with notice
-    if (!Object.values(CONFIG.chats).includes(chatId)) {
+    /*if (!Object.values(CONFIG.chats).includes(chatId)) {
       ctx
         .reply('This group is not authorized to use this bot. Please contact your Telegram administrator. -100')
         .catch((error) => {
           console.error(`-100: ${error.message}`);
         });
       return;
-    }
-    // For Api3 groups, only process messages from the main chat
-    else if (chatId !== CONFIG.chats.main) {
+    }*/
+    // Only process messages from the (Api3 or Curt) main group
+    //else
+    if (chatId !== CONFIG.chats.main) {
       // Message is not from the main chat, ignore it
+      return;
+    }
+
+    // If the message is a command, skip processing
+    if (ctx.update.message.text.startsWith('/')) {
       return;
     }
 
@@ -58,14 +64,24 @@ bot.on(message('text'), async (ctx) => {
     // Check message against AI rules
     const returnedArray = await handleMessage(ctx.update.message.text);
     console.log(`  >>> AI returned: ${returnedArray}`);
+    if (returnedArray[0] === undefined) {
+      logger.error('  >>> returnedArray[0] undefined, skipping further processing.');
+      return;
+    }
+    if (returnedArray[1] === undefined) {
+      logger.error('  >>> returnedArray[1] undefined, skipping further processing.');
+      return;
+    }
+
     // If rules were violated send message to admin group and timeout user
-    if (returnedArray[0] === 'YES') {
+    // returnedArray[0] could be YES or <result>YES
+    if (returnedArray[0].includes('YES')) {
       /**
-       * Notify "Curt Administrators" about the message
+       * Notify Administrators about the message
        * IMPORTANT: Must use a promise to catch errors and not rely on await as
        * sendMessage can throw its own error that will terminate the Nodejs process
        * Do not use periods (.) in the Markup text
-       *
+
        */
       bot.telegram
         .sendMessage(
@@ -111,7 +127,7 @@ bot.on(message('text'), async (ctx) => {
       // Reply to user in main group about the timeout from AI check
       // It does no good to add /chatrules to the message as the user is in timeout
       await newMessageMain(
-        `<i>This message is removed after one minute.</i>\n-----\nSorry ${ctx.update.message.from.first_name} your post is on hold and in review by an admin.`,
+        `<i>This message will be removed after one minute.</i>\n-----\nSorry ${ctx.update.message.from.first_name} your post is on hold and in review by an admin.`,
         60000
       );
     }
@@ -145,7 +161,7 @@ bot.on(message('text'), async (ctx) => {
 /**
  * Handle 'left_chat_member' event to delete "User left the group" messages
  */
-/*bot.on('left_chat_member', (ctx) => {
+bot.on('left_chat_member', (ctx) => {
   const chatId = ctx.update.message.chat.id;
   const messageId = ctx.update.message.message_id;
   // If an unauthorized group is using this bot
@@ -153,11 +169,11 @@ bot.on(message('text'), async (ctx) => {
     // Do nothing the user (from a unauthorized group) is gone
     return;
   }
-  // removes the3 system message about user leaving the group
+  // Removes the system message about user leaving the group
   bot.telegram.deleteMessage(chatId, messageId).catch((error) => {
     console.error(`Error deleting message: ${error.message}`);
   });
-});*/
+});
 
 // Start the Nodejs process via bot
 bot.launch();

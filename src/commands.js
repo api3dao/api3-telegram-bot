@@ -23,14 +23,16 @@ async function startChatRulesCommand() {
   bot.command('chatrules', async (ctx) => {
     if (CONFIG.chats.main !== ctx.chat.id) {
       ctx
-        .reply('This group is not authorized to use this bot. Please contact your Telegram administrator. -200')
+        .reply(
+          'This group is not authorized to use the requested bot command. Please contact your Telegram administrator. -200'
+        )
         .catch((error) => {
           console.error(`-200: ${error.message}`);
         });
       return;
     }
     newMessageMain(
-      `<i>This message is removed after 45 seconds.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the chat rules.\n\n${RULES}`,
+      `<i>This message will be removed after 45 seconds.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the chat rules.\n\n${RULES}`,
       45000
     );
   });
@@ -44,14 +46,16 @@ async function startAllowedLinksCommand() {
   bot.command('allowedlinks', async (ctx) => {
     if (CONFIG.chats.main !== ctx.chat.id) {
       ctx
-        .reply('This group is not authorized to use this bot. Please contact your Telegram administrator. -300')
+        .reply(
+          'This group is not authorized to use the requested bot command. Please contact your Telegram administrator. -300'
+        )
         .catch((error) => {
           console.error(`-300: ${error.message}`);
         });
       return;
     }
     newMessageMain(
-      `<i>This message is removed after 45 seconds.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the allowed links.\n\n${ALLOWED_LINKS}`,
+      `<i>This message will be removed after 45 seconds.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the allowed links.\n\n${ALLOWED_LINKS}`,
       60000
     );
   });

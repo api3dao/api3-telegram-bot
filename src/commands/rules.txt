@@ -4,6 +4,7 @@ No posts seeking employment or employees
 No excessive profanity
 No bad faith arguments, concern trolling, etc.
 No Api3 token price talk
+No Airdrop or Quick Share
 English only in messages
 Links will almost surely get you a timeout, see allowed links using the command /allowedlinks
 
