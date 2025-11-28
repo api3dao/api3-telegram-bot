@@ -13,7 +13,7 @@ const {
   startActionUnbanUser,
   startActionWelcome
 } = require('./actions');
-//const { processNewMember } = require('./welcome');
+const { processNewMember } = require('./welcome');
 const { startAllowedLinksCommand, startChatRulesCommand } = require('./commands');
 const fs = require('fs');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
@@ -36,17 +36,17 @@ bot.on(message('text'), async (ctx) => {
     console.log(`Received message from ${ctx.update.message.from.first_name}: ${ctx.update.message.text}`);
 
     // If an unauthorized non Api3 group is using this bot, skip the message with notice
-    /*if (!Object.values(CONFIG.chats).includes(chatId)) {
+    // The notice will entice them to remove the bot
+    if (!Object.values(CONFIG.chats).includes(chatId)) {
       ctx
         .reply('This group is not authorized to use this bot. Please contact your Telegram administrator. -100')
         .catch((error) => {
           console.error(`-100: ${error.message}`);
         });
       return;
-    }*/
+    }
     // Only process messages from the (Api3 or Curt) main group
-    //else
-    if (chatId !== CONFIG.chats.main) {
+    else if (chatId !== CONFIG.chats.main) {
       // Message is not from the main chat, ignore it
       return;
     }
@@ -145,7 +145,7 @@ bot.on(message('text'), async (ctx) => {
 /**
  * Handle 'new_chat_members' event
  */
-/*bot.on('new_chat_members', async (ctx) => {
+bot.on('new_chat_members', async (ctx) => {
   // If an unauthorized group is using this bot
   if (!Object.values(CONFIG.chats).includes(ctx.update.message.chat.id)) {
     ctx
@@ -156,7 +156,7 @@ bot.on(message('text'), async (ctx) => {
     return;
   }
   processNewMember(ctx);
-});*/
+});
 
 /**
  * Handle 'left_chat_member' event to delete "User left the group" messages

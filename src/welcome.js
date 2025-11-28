@@ -19,7 +19,14 @@ async function processNewMember(ctx) {
       // Set them to restricted mode forever for now
       // It seems to important for browser users, web.telegram.org that we use await ctx.telegram.restrictChatMember
       // and not await bot.telegram.restrictChatMember
-      await ctx.telegram.restrictChatMember(CONFIG.chats.main, user.id, { permissions: { can_send_messages: false } });
+      //await ctx.telegram.restrictChatMember(CONFIG.chats.main, user.id, { permissions: { can_send_messages: false } });
+
+      const timeoutMinutes = 2; // Unix timestamp for the timeout in minutes
+      const until_date = Math.floor(Date.now() / 1000) + timeoutMinutes * 60;
+      await ctx.telegram.restrictChatMember(CONFIG.chats.main, userId, {
+        permissions: { can_send_messages: false },
+        until_date: until_date
+      });
 
       const inlineKeyboard = {
         inline_keyboard: [[{ text: `Click here to prove you're human`, callback_data: `action_welcome-${userId}` }]]
