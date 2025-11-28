@@ -32,8 +32,8 @@ async function startChatRulesCommand() {
       return;
     }
     newMessageMain(
-      `<i>This message will be removed after 45 seconds.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the chat rules.\n\n${RULES}`,
-      45000
+      `<i>This message will be removed after one minute.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the chat rules.\n\n${RULES}`,
+      60000
     );
   });
 }
@@ -55,7 +55,7 @@ async function startAllowedLinksCommand() {
       return;
     }
     newMessageMain(
-      `<i>This message will be removed after 45 seconds.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the allowed links.\n\n${ALLOWED_LINKS}`,
+      `<i>This message will be removed after one minute.</i>\n-----\nGlad to help out ${ctx.update.message.from.first_name}, here are the allowed links.\n\n${ALLOWED_LINKS}`,
       60000
     );
   });
