@@ -255,7 +255,8 @@ async function startActionWelcome() {
 
       const name = from.first_name || `@${from.username}`;
       newMessageMain(
-        `Welcome ${name}! Its great that you are here. You can now send messages to the group. Please read the /chatrules`
+        `<i>This message will be removed after five minutes.</i>\n-----\nWelcome ${name}! Its great that you are here. You can now send messages to the group. Please read the /chatrules`,
+        300000
       );
       // Output welcome message to main group for a new user
       logger.info(`Welcome action completed for user ${name} / ${userId}`);
