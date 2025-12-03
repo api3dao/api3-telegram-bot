@@ -18,6 +18,8 @@ const { startAllowedLinksCommand, startChatRulesCommand } = require('./commands'
 const fs = require('fs');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 
+logger.ntfy(`Bot starting in ${process.env.NODE_ENV} mode`, 'rocket', 'Startup');
+
 // COMMANDS: Declare commands here before any other event handlers
 startAllowedLinksCommand();
 startChatRulesCommand();
@@ -33,7 +35,6 @@ startChatRulesCommand();
 bot.on(message('text'), async (ctx) => {
   try {
     const chatId = ctx.update.message.chat.id;
-    console.log(`Received message from ${ctx.update.message.from.first_name}: ${ctx.update.message.text}`);
 
     // If an unauthorized non Api3 group is using this bot, skip the message with notice
     // The notice will entice them to remove the bot
@@ -63,7 +64,7 @@ bot.on(message('text'), async (ctx) => {
 
     // Check message against AI rules
     const returnedArray = await handleMessage(ctx.update.message.text);
-    console.log(`  >>> AI returned: ${returnedArray}`);
+
     if (returnedArray[0] === undefined) {
       logger.error('  >>> returnedArray[0] undefined, skipping further processing.');
       return;
@@ -76,6 +77,9 @@ bot.on(message('text'), async (ctx) => {
     // If rules were violated send message to admin group and timeout user
     // returnedArray[0] could be YES or <result>YES
     if (returnedArray[0].includes('YES')) {
+      logger.info(
+        `  >>> AI returned: (${ctx.update.message.from.first_name}-@${ctx.update.message.from.username}): ${returnedArray}`
+      );
       /**
        * Notify Administrators about the message
        * IMPORTANT: Must use a promise to catch errors and not rely on await as
@@ -129,6 +133,13 @@ bot.on(message('text'), async (ctx) => {
       await newMessageMain(
         `<i>This message will be removed after one minute.</i>\n-----\nSorry ${ctx.update.message.from.first_name} your post is on hold and in review by an admin.`,
         60000
+      );
+
+      // Ntfy notification
+      logger.ntfy(
+        `USER: ${ctx.update.message.from.first_name} - @${ctx.update.message.from.username} - ${ctx.update.message.from.id}\nREASON: ${returnedArray[1]}\nMESSAGE: ${ctx.update.message.text}`,
+        'warning',
+        'AI Violation'
       );
     }
 
@@ -223,7 +234,7 @@ async function getAiMessageBody(ctx, returnedArray) {
 ----------
 Username: @${ctx.update.message.from.username}
 User ID: ${ctx.update.message.from.id}
-First name: ${ctx.update.message.from.first_name}
+User first name: ${ctx.update.message.from.first_name}
 Is bot: ${ctx.update.message.from.is_bot}
 ----------
 Reason:\n${returnedArray[1]}
