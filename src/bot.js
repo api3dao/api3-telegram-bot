@@ -16,7 +16,7 @@ let bot = undefined;
 if (!bot) {
   // Initialize bot with bot token, bot is used to talk to the Telegram API via Telegraf.
   bot = new Telegraf(CONFIG.bot_token);
-  console.info('The bot is ready.');
+  console.info('The Telegram Api3 Guardian bot is ready.');
 }
 
 // Poor man's database
@@ -36,7 +36,7 @@ setInterval(function () {
         if (data.ttl < Date.now() - 6.134e8) {
           const filePath = `../telegram-messages/${file}`;
           fs.unlinkSync(filePath);
-          console.log(`Removed msg file: ${file}`);
+          //console.log(`Removed msg file: ${file}`);
         }
       }
     });
