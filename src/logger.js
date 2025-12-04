@@ -7,7 +7,6 @@ const NTFY_URL =
 
 const log = (level, message) => {
   // Since we now start PM2 using the --time option, timestamps are added automatically
-  // const timestamp = new Date().toISOString();
   if (level === 'error') {
     console.error(`[${level.toUpperCase()}]: ${message}`);
   } else {
@@ -37,7 +36,7 @@ const ntfySend = (message, tags, title) => {
   }
 };
 
-// To prevent runaway logging in the Telegram admin group
+// To prevent runaway logging
 let canPost = true;
 
 module.exports = {
@@ -72,18 +71,3 @@ module.exports = {
     }
   }
 };
-
-/*function ntfySend(message, tags, title) {
-  try {
-    fetch(NTFY_URL, {
-      method: 'POST', // PUT works too
-      body: message,
-      headers: {
-        Title: title || 'Api3 Telegram Bot Notification',
-        Tags: tags
-      }
-    });
-  } catch (err) {
-    console.error('Ntfy error:', err);
-  }
-}*/

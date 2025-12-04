@@ -16,7 +16,7 @@ let bot = undefined;
 if (!bot) {
   // Initialize bot with bot token, bot is used to talk to the Telegram API via Telegraf.
   bot = new Telegraf(CONFIG.bot_token);
-  console.info('The Telegram Api3 Guardian bot is ready.');
+  console.info(`The Telegram Api3 Guardian bot (${process.env.NODE_ENV}) is ready.`);
 }
 
 // Poor man's database
