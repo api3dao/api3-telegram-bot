@@ -64,13 +64,8 @@ bot.on(message('text'), async (ctx) => {
 
     // Check message against AI rules
     const returnedArray = await handleMessage(ctx.update.message.text);
-
-    if (returnedArray[0] === undefined) {
-      logger.error('  >>> returnedArray[0] undefined, skipping further processing.');
-      return;
-    }
-    if (returnedArray[1] === undefined) {
-      logger.error('  >>> returnedArray[1] undefined, skipping further processing.');
+    if (!returnedArray || returnedArray[0] === undefined || returnedArray[1] === undefined) {
+      logger.error('>>> AI returnedArray malformed, skipping further processing.');
       return;
     }
 
@@ -78,14 +73,13 @@ bot.on(message('text'), async (ctx) => {
     // returnedArray[0] could be YES or <result>YES
     if (returnedArray[0].includes('YES')) {
       logger.info(
-        `  >>> AI returned: (${ctx.update.message.from.first_name}-@${ctx.update.message.from.username}): ${returnedArray}`
+        `>>> AI returned: (${ctx.update.message.from.first_name}-@${ctx.update.message.from.username}): ${returnedArray}`
       );
       /**
        * Notify Administrators about the message
        * IMPORTANT: Must use a promise to catch errors and not rely on await as
        * sendMessage can throw its own error that will terminate the Nodejs process
        * Do not use periods (.) in the Markup text
-
        */
       bot.telegram
         .sendMessage(
@@ -108,7 +102,7 @@ bot.on(message('text'), async (ctx) => {
         )
         .catch((error) => console.error('Error AI admin keyboard response:', error));
 
-      // Write the message to disk
+      // Write the message to disk, used to restore the message later if needed
       fs.writeFileSync(
         `../telegram-messages/${ctx.update.message.message_id}.json`,
         JSON.stringify(await createMessageDiskObj(ctx))
