@@ -185,9 +185,13 @@ bot.launch();
 
 // Enable graceful stop
 process.once('SIGINT', () => {
+  logger.info('Bot stopping (SIGINT)');
+  logger.ntfy('Bot stopping (SIGINT)', 'stop_sign', 'Shutdown');
   bot.stop('SIGINT');
 });
 process.once('SIGTERM', () => {
+  logger.info('Bot stopping (SIGTERM)');
+  logger.ntfy('Bot stopping (SIGTERM)', 'stop_sign', 'Shutdown');
   bot.stop('SIGTERM');
 });
 
