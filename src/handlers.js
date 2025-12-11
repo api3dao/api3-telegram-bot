@@ -26,8 +26,12 @@ const handleMessage = async (message) => {
   ];
 
   const response = await chat(messages);
-  const [result, reason] = response.split('|');
-  return [result, reason]; // YES or NO and reason
+  if (!response) {
+    return undefined;
+  } else {
+    const [result, reason] = response.split('|');
+    return [result, reason]; // YES or NO and reason
+  }
 };
 
 module.exports = {

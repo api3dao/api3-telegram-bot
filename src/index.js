@@ -64,6 +64,7 @@ bot.on(message('text'), async (ctx) => {
 
     // Check message against AI rules
     const returnedArray = await handleMessage(ctx.update.message.text);
+    // If returnedArray is undefined, there was an error with the LLM call
     if (!returnedArray || returnedArray[0] === undefined || returnedArray[1] === undefined) {
       logger.error('>>> AI returnedArray malformed, skipping further processing.');
       return;
