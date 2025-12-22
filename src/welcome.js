@@ -16,11 +16,10 @@ async function processNewMember(ctx) {
         return;
       }
 
-      // Set them to restricted mode forever for now
-      // It seems to important for browser users, web.telegram.org that we use await ctx.telegram.restrictChatMember
-      // and not await bot.telegram.restrictChatMember
-      //await ctx.telegram.restrictChatMember(CONFIG.chats.main, user.id, { permissions: { can_send_messages: false } });
-
+      // Restrict the user for 2 minutes
+      // Important for browser users:
+      //  - use ctx.telegram.restrictChatMember
+      //  - not bot.telegram.restrictChatMember
       const timeoutMinutes = 2; // Unix timestamp for the timeout in minutes
       const until_date = Math.floor(Date.now() / 1000) + timeoutMinutes * 60;
       await ctx.telegram.restrictChatMember(CONFIG.chats.main, userId, {
@@ -93,7 +92,7 @@ async function deleteWelcomeMessage(msgId, user) {
  */
 async function getWelcomeMsgText(first, username) {
   const name = first || `@${username}`;
-  return `Hey ${name}. Are you human? <b>You have 1 minute to prove it.</b> Otherwise rejoin again later.`;
+  return `Hey ${name}. Are you human? <b>You have 1 minute to prove it.</b> Otherwise try to rejoin later.`;
 }
 
 module.exports = {
