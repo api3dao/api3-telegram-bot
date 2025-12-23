@@ -2,11 +2,18 @@ Be careful using links in your message. I am extremely judgemental and give time
 
 <b>1. Root Domains and All Subdomains (Api3 and General Platforms)</b>
 
-The URL must start with one of the following protocols and domains, or its protocol-less equivalent, and can include any path on that domain and all of its subdomains. 
-Example: <code>https://dao-docs.web.app/overview/dao-tracker.html</code>:
+The URL must start with one of the following protocols and domains, or its protocol-less equivalent, and can include any path on that domain and all of its subdomains:
+
      - https://api3.org/ 
      - https://youtube.com/
      - https://github.com/ 
+
+Examples: 
+
+     - https://api3.org/
+     - https://docs.api3.org/
+     - https://dao-docs.api3.org/overview/governance.html
+
 
 <b>2. Official API3 Social/Community Profiles (Specific Paths Only)</b>
 
