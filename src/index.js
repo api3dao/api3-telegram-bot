@@ -62,10 +62,23 @@ bot.on(message('text'), async (ctx) => {
       return;
     }
 
-    // Check message against AI rules
+    // >>> AI CHECK <<<
     const returnedArray = await handleMessage(ctx.update.message.text);
-    // If returnedArray is undefined, there was an error with the LLM call
-    if (!returnedArray || returnedArray[0] === undefined || returnedArray[1] === undefined) {
+
+    // Han check: Check for Han characters in first_name and text is a number (to catch spam bots)
+    // A common scam is to use Han characters in the name (that are actually a message) and a few meaningless characters in the actual message
+    if (
+      (containsHanCharacters(ctx.update.message.from.first_name) ||
+        containsHanCharacters(ctx.update.message.from.last_name)) &&
+      ctx.update.message.text.length < 5
+    ) {
+      returnedArray[0] = 'YES';
+      returnedArray[1] =
+        'AI exception: Detected Han characters in first/last names and message with limited characters.';
+    }
+
+    // If AI returnedArray is undefined, there was an error with the LLM call
+    else if (!returnedArray || returnedArray[0] === undefined || returnedArray[1] === undefined) {
       logger.error('>>> AI returnedArray malformed, skipping further processing.');
       return;
     }
@@ -233,10 +246,19 @@ async function getAiMessageBody(ctx, returnedArray) {
 ----------
 Username: @${ctx.update.message.from.username}
 User ID: ${ctx.update.message.from.id}
-User first name: ${ctx.update.message.from.first_name}
+User first / last name: ${ctx.update.message.from.first_name} / ${ctx.update.message.from.last_name}
 Is bot: ${ctx.update.message.from.is_bot}
 ----------
 Reason:\n${returnedArray[1]}
 ----------
 Message:\n${ctx.update.message.text}`;
+}
+
+/**
+ * Check for Han characters in a string
+ * @param {*} str
+ * @returns boolean
+ */
+function containsHanCharacters(str) {
+  return /\p{Script=Han}/u.test(str);
 }
