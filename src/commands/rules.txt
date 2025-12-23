@@ -6,14 +6,6 @@ No bad faith arguments, concern trolling, etc.
 No Api3 token price talk
 No Airdrop or Quick Share
 English only in messages
-Links will almost surely get you a timeout, see allowed links using the command /allowedlinks
+Links are generally not allowed, see guidelines at /allowedlinks
 
-I use AI to review messages. If you are ignoring the rules:
- - Your message will be deleted
- - You get a 24 hour timeout
-Then an admin will review your message resulting in one of the following actions:
- - Forever timeout, read only member
- - Permanent ban, cannot rejoin
- - Kicked out, you can rejoin
- - Private warning from an admin (a second chance)
- - Remove timeout, repost your message with an apology
+When rules are ignored you will get a 24 hour timeout while an admin reviews your message.
