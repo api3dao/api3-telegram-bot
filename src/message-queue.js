@@ -4,7 +4,7 @@ const fs = require('fs');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 const QUEUE = [];
 
-//////////// TESTing ////////////////////////////////////
+// For testing the QUEUE processing
 /*let count = 0;
 const intervalId = setInterval(async function () {
   try {
@@ -17,7 +17,6 @@ const intervalId = setInterval(async function () {
     clearInterval(intervalId); // Stop the interval after 5 executions
   }
 }, 1000);*/
-//////////////// END TEST /////////////////////////////
 
 /** QUEUE
  * Process the queue, only send one message for each
@@ -50,8 +49,6 @@ setInterval(async function () {
  * @param {*} message
  */
 async function newMessageMain(message, deleteAfterMs = 0) {
-  //console.log('newMessageMain() ----------------------');
-  //console.log(message, deleteAfterMs);
   bot.telegram
     .sendMessage(CONFIG.chats.main, message, {
       parse_mode: 'HTML',
@@ -84,8 +81,6 @@ async function newMessageMain(message, deleteAfterMs = 0) {
  * @param {*} message
  */
 async function newMessageAdmin(message) {
-  //console.log('newMessageAdmin() ----------------------');
-  //console.log(message);
   bot.telegram
     .sendMessage(CONFIG.chats.admin, message, { parse_mode: 'HTML', disable_web_page_preview: true })
     .catch((error) => {
@@ -98,7 +93,24 @@ async function newMessageAdmin(message) {
     });
 }
 
+/**
+ * Place all messages into the logging group for lookup purposes
+ * parse_mode: Do not use, need to see what user sent exactly
+ * @param {*} message
+ */
+async function newMessageLogging(message) {
+  bot.telegram.sendMessage(CONFIG.chats.logging, message, { disable_web_page_preview: true }).catch((error) => {
+    if (error.code === 429) {
+      const retryAfter = error.response.parameters.retry_after || 30; // Default to 30 seconds if not provided
+      QUEUE.push({ function: 'newMessageLogging', message: message, ts: Date.now() + retryAfter * 1000 });
+    }
+    error['api3'] = { file: 'message-queue', function: 'newMessageLogging', message };
+    logger.error(error);
+  });
+}
+
 module.exports = {
   newMessageMain,
-  newMessageAdmin
+  newMessageAdmin,
+  newMessageLogging
 };
