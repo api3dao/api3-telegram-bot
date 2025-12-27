@@ -3,7 +3,7 @@ const { Markup } = require('telegraf');
 const { message } = require('telegraf/filters');
 const { handleMessage } = require('./handlers');
 const logger = require('./logger');
-const { newMessageMain, newMessageAdmin } = require('./message-queue');
+const { newMessageMain, newMessageAdmin, newMessageLogging } = require('./message-queue');
 const {
   startActionTimeout24,
   startActionTimeoutForever,
@@ -62,28 +62,44 @@ bot.on(message('text'), async (ctx) => {
       return;
     }
 
+    // Log all messages to Api3 Logging group
+    newMessageLogging(
+      `${ctx.update.message.from.first_name || ''} ${ctx.update.message.from.last_name || ''} (@${ctx.update.message.from.username}) (${ctx.update.message.from.id})
+Len: ${ctx.update.message.text.length} - Encoded characters: ${detectEncodedCharacters(ctx.update.message.text)} 
+-----
+${ctx.update.message.text}`
+    );
+
+    // Notify the admin channel if someone uses the string "admin" in their first_name or last_name
+    if (
+      ctx.update.message.from.first_name.toLowerCase().indexOf('admin') > -1 ||
+      ctx.update.message.from.last_name.toLowerCase().indexOf('admin') > -1
+    ) {
+      logger.info('>>> Use of "admin" in name detected, check Admin group');
+      const warn = `WARNING: ${ctx.update.message.from.first_name} - ${ctx.update.message.from.last_name} (@${ctx.update.message.from.username}) - (${ctx.update.message.from.id}) uses the word "admin" in their first or last name.`;
+      newMessageAdmin(warn);
+    }
+
     // >>> AI CHECK <<<
     const returnedArray = await handleMessage(ctx.update.message.text);
 
-    // Han check: Check for Han characters in first_name and text is a number (to catch spam bots)
     // A common scam is to use Han characters in the name (that are actually a message) and a few meaningless characters in the actual message
+    // Cannot contain more than 3 Han characters in first_name or last_name
     if (
-      (containsHanCharacters(ctx.update.message.from.first_name) ||
-        containsHanCharacters(ctx.update.message.from.last_name)) &&
-      ctx.update.message.text.length < 5
+      countHanCharacters(ctx.update.message.from.first_name) > 3 ||
+      countHanCharacters(ctx.update.message.from.last_name) > 3
     ) {
       returnedArray[0] = 'YES';
-      returnedArray[1] =
-        'AI exception: Detected Han characters in first/last names and message with limited characters.';
+      returnedArray[1] = 'Detected excessive (4+) Han characters in first or last name.';
     }
 
     // If AI returnedArray is undefined, there was an error with the LLM call
     else if (!returnedArray || returnedArray[0] === undefined || returnedArray[1] === undefined) {
-      logger.error('>>> AI returnedArray malformed, skipping further processing.');
+      logger.error(`>>> AI returnedArray malformed\n> Msg: ${ctx.update.message.text}\n> returnArray:${returnedArray}`);
       return;
     }
 
-    // If rules were violated send message to admin group and timeout user
+    // If rules were violated send message to Admin group and timeout user
     // returnedArray[0] could be YES or <result>YES
     if (returnedArray[0].includes('YES')) {
       logger.info(
@@ -149,12 +165,6 @@ bot.on(message('text'), async (ctx) => {
         'warning',
         'AI Violation'
       );
-    }
-
-    // Notify the admin channel if someone uses the string "admin" in their first_name
-    if (ctx.update.message.from.first_name.toLowerCase().indexOf('admin') > -1) {
-      const warn = `WARNING - @${ctx.update.message.from.username} - ${ctx.update.message.from.id} uses the word "admin" in their first name.`;
-      newMessageAdmin(warn);
     }
   } catch (error) {
     logger.error(error);
@@ -246,7 +256,7 @@ async function getAiMessageBody(ctx, returnedArray) {
 ----------
 Username: @${ctx.update.message.from.username}
 User ID: ${ctx.update.message.from.id}
-User first / last name: ${ctx.update.message.from.first_name} / ${ctx.update.message.from.last_name}
+Name: ${ctx.update.message.from.first_name} - ${ctx.update.message.from.last_name}
 Is bot: ${ctx.update.message.from.is_bot}
 ----------
 Reason:\n${returnedArray[1]}
@@ -261,4 +271,28 @@ Message:\n${ctx.update.message.text}`;
  */
 function containsHanCharacters(str) {
   return /\p{Script=Han}/u.test(str);
+}
+
+/**
+ * js count han characters in mixed string
+ * @param {*} str
+ * @returns
+ */
+function countHanCharacters(str) {
+  if (!str) return 0;
+  const matches = str.match(/\p{Script=Han}/gu);
+  return matches ? matches.length : 0;
+}
+
+/**
+ * Detect encoded HTML characters in a message
+
+ * @param {*} msg
+ * @returns boolean
+ */
+function detectEncodedCharacters(msg) {
+  const found = msg.match(/&(#?[a-z0-9]+);/gi); // with ; ending
+  const found2 = msg.match(/&(#?[a-z0-9]+)/gi); // without ; ending
+  if (found || found2) return true;
+  return false;
 }
