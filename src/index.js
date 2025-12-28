@@ -71,9 +71,10 @@ ${ctx.update.message.text}`
     );
 
     // Notify the admin channel if someone uses the string "admin" in their first_name or last_name
+    const from = ctx.update.message.from;
     if (
-      ctx.update.message.from.first_name.toLowerCase().indexOf('admin') > -1 ||
-      ctx.update.message.from.last_name.toLowerCase().indexOf('admin') > -1
+      (from.first_name && from.first_name.toLowerCase().indexOf('admin') > -1) ||
+      (from.last_name && from.last_name.toLowerCase().indexOf('admin') > -1)
     ) {
       logger.info('>>> Use of "admin" in name detected, check Admin group');
       const warn = `WARNING: ${ctx.update.message.from.first_name} - ${ctx.update.message.from.last_name} (@${ctx.update.message.from.username}) - (${ctx.update.message.from.id}) uses the word "admin" in their first or last name.`;
@@ -85,10 +86,7 @@ ${ctx.update.message.text}`
 
     // A common scam is to use Han characters in the name (that are actually a message) and a few meaningless characters in the actual message
     // Cannot contain more than 3 Han characters in first_name or last_name
-    if (
-      countHanCharacters(ctx.update.message.from.first_name) > 3 ||
-      countHanCharacters(ctx.update.message.from.last_name) > 3
-    ) {
+    if (countHanCharacters(from.first_name) > 3 || countHanCharacters(from.last_name) > 3) {
       returnedArray[0] = 'YES';
       returnedArray[1] = 'Detected excessive (4+) Han characters in first or last name.';
     }
@@ -269,9 +267,9 @@ Message:\n${ctx.update.message.text}`;
  * @param {*} str
  * @returns boolean
  */
-function containsHanCharacters(str) {
+/*function containsHanCharacters(str) {
   return /\p{Script=Han}/u.test(str);
-}
+}*/
 
 /**
  * js count han characters in mixed string
