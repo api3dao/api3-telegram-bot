@@ -4,6 +4,7 @@ const { message } = require('telegraf/filters');
 const { handleMessage } = require('./handlers');
 const logger = require('./logger');
 const { newMessageMain, newMessageAdmin, newMessageLogging } = require('./message-queue');
+const { sendPushNotification } = require('./pushover');
 const {
   startActionTimeout24,
   startActionTimeoutForever,
@@ -18,7 +19,7 @@ const { startAllowedLinksCommand, startChatRulesCommand } = require('./commands'
 const fs = require('fs');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 
-logger.ntfy(`Bot starting in ${process.env.NODE_ENV} mode`, 'rocket', 'Startup');
+sendPushNotification(0, 'STARTUP', `Bot starting in ${process.env.NODE_ENV} mode`);
 
 // COMMANDS: Declare commands here before any other event handlers
 startAllowedLinksCommand();
@@ -157,12 +158,13 @@ ${ctx.update.message.text}`
         60000
       );
 
-      // Ntfy notification
-      logger.ntfy(
-        `USER: ${ctx.update.message.from.first_name} - @${ctx.update.message.from.username} - ${ctx.update.message.from.id}\nREASON: ${returnedArray[1]}\nMESSAGE: ${ctx.update.message.text}`,
-        'warning',
-        'AI Violation'
-      );
+      // Notify via Pushover about the admin entry
+      sendPushNotification(0, `VIOLATION: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
+    }
+
+    // No violations send an alert to Pushover
+    else {
+      sendPushNotification(2, `POSTED: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
     }
   } catch (error) {
     logger.error(error);
@@ -206,14 +208,15 @@ bot.on('left_chat_member', (ctx) => {
 bot.launch();
 
 // Enable graceful stop
-process.once('SIGINT', () => {
+// The push notifications will only appear in Pushover if running with PM2
+process.once('SIGINT', async () => {
   logger.info('Bot stopping (SIGINT)');
-  logger.ntfy('Bot stopping (SIGINT)', 'stop_sign', 'Shutdown');
+  await sendPushNotification(0, 'SHUTDOWN:', 'Bot stopping - SIGINT');
   bot.stop('SIGINT');
 });
-process.once('SIGTERM', () => {
+process.once('SIGTERM', async () => {
   logger.info('Bot stopping (SIGTERM)');
-  logger.ntfy('Bot stopping (SIGTERM)', 'stop_sign', 'Shutdown');
+  await sendPushNotification(0, 'SHUTDOWN:', 'Bot stopping - SIGTERM');
   bot.stop('SIGTERM');
 });
 
@@ -261,15 +264,6 @@ Reason:\n${returnedArray[1]}
 ----------
 Message:\n${ctx.update.message.text}`;
 }
-
-/**
- * Check for Han characters in a string
- * @param {*} str
- * @returns boolean
- */
-/*function containsHanCharacters(str) {
-  return /\p{Script=Han}/u.test(str);
-}*/
 
 /**
  * js count han characters in mixed string
