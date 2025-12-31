@@ -8,7 +8,6 @@ async function chat(messages) {
   } catch (errorOpenrouter) {
     const err = JSON.stringify(errorOpenrouter, null, 4);
     logger.error(`chatWithOpenRouter() error:\n ${err}`);
-    logger.ntfy(`chatWithOpenRouter() error:\n ${err}`);
     return undefined;
   }
 }
