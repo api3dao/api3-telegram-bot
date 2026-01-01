@@ -21,12 +21,12 @@ module.exports = {
   error: (message) => {
     log('error', message);
 
-    // Add to Logging group in Telegram for development environment only
+    // Add to Logging group in Telegram and posting to Pushover
     if (bot && canPost) {
-      // Allow further logging in 3 seconds, prevent excessive logging to logging group
+      // Allow further logging and posting in 10 seconds, prevent excessive logging to logging group and Pushover posting
       setTimeout(() => {
         canPost = true;
-      }, 3000);
+      }, 10000);
 
       canPost = false;
 
