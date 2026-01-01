@@ -64,12 +64,26 @@ bot.on(message('text'), async (ctx) => {
     }
 
     // Log all messages to Api3 Logging group
-    newMessageLogging(
+    // Include the reply to msg if present
+    // Reply ID: ${ctx.update.message.reply_to_message ? ctx.update.message.reply_to_message.message_id : 'N/A'}
+    // Reply Text: ${ctx.update.message.reply_to_message ? ctx.update.message.reply_to_message.text : 'N/A'}
+    // Msg Dttm: ${new Date(ctx.update.message.date * 1000).toISOString()}
+    //let replyTo;
+    //if (ctx.update.message.reply_to_message) {
+    //replyTo = ctx.update.message;
+    //}
+    //Reply Dttm: ${ctx.update.message.reply_to_message ? new Date(ctx.update.reply_to_message.date * 1000).toISOString() : 'N/A'}
+    /*newMessageLogging(
       `${ctx.update.message.from.first_name || ''} ${ctx.update.message.from.last_name || ''} (@${ctx.update.message.from.username}) (${ctx.update.message.from.id})
 Len: ${ctx.update.message.text.length} - Encoded characters: ${detectEncodedCharacters(ctx.update.message.text)} 
------
+Msg ID: ${ctx.update.message.message_id}
+
+      ----- Message object -----\n
+      ${JSON.stringify(ctx.update.message, null, 5)}
+--------------
 ${ctx.update.message.text}`
-    );
+    );*/
+    newMessageLogging(JSON.stringify(ctx.update.message, null, 5));
 
     // Notify the admin channel if someone uses the string "admin" in their first_name or last_name
     const from = ctx.update.message.from;
@@ -278,13 +292,12 @@ function countHanCharacters(str) {
 
 /**
  * Detect encoded HTML characters in a message
-
  * @param {*} msg
  * @returns boolean
  */
-function detectEncodedCharacters(msg) {
+/*function detectEncodedCharacters(msg) {
   const found = msg.match(/&(#?[a-z0-9]+);/gi); // with ; ending
   const found2 = msg.match(/&(#?[a-z0-9]+)/gi); // without ; ending
   if (found || found2) return true;
   return false;
-}
+}*/
