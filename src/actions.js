@@ -128,15 +128,25 @@ async function startActionRestoreMessage() {
 
       const userId = msg.from.id;
       const chatId = CONFIG.chats.main;
+      let restoreMsg = `<i>An admin told me to re-post a message I had removed earlier.</i>\n-----`;
+
+      if (msg.quote) {
+        const truncated = msg.quote.text.length > 90 ? `${msg.quote.text.slice(0, 90).trim()}...` : msg.quote.text;
+        restoreMsg += `\n<blockquote>${msg.external_reply.origin.sender_user.first_name}\n<code>(external reply)</code>\n${truncated}</blockquote>`;
+      }
+      if (msg.reply_to_message) {
+        const truncated2 =
+          msg.reply_to_message.text.length > 90
+            ? `${msg.reply_to_message.text.slice(0, 90).trim()}...`
+            : msg.reply_to_message.text;
+        restoreMsg += `\n<blockquote>${msg.reply_to_message.from.first_name}\n${truncated2}</blockquote>`;
+      }
+      restoreMsg += `\n${msg.from.first_name} @${msg.from.username}`;
+
+      restoreMsg += `\n${msg.text}`;
 
       // Send user's message back to the main chat
-      newMessageMain(
-        `<i>An admin told me to re-post a message I had removed earlier, my apologies.</i>\n-----\nFrom: ${msg.from.first_name} @${msg.from.username} \n${msg.text}`
-      );
-      /*bot.telegram.sendMessage(
-        chatId,
-        `<i>An admin told me to re-post a message I had removed earlier, my apologies.<i>\n-----\nFrom user: ${msg.from.first_name} @${msg.from.username} \n${msg.text}`
-      );*/
+      newMessageMain(restoreMsg);
 
       // Clear timeout
       await bot.telegram.restrictChatMember(chatId, userId, { permissions: { can_send_messages: true } });

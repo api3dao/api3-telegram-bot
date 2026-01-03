@@ -58,32 +58,13 @@ bot.on(message('text'), async (ctx) => {
       return;
     }
 
+    // Log all messages to Api3 Logging group
+    newMessageLogging(JSON.stringify(ctx.update.message, null, 5));
+
     // If the user has immunity, skip processing
     if (CONFIG.immunity.includes(ctx.update.message.from.username)) {
       return;
     }
-
-    // Log all messages to Api3 Logging group
-    // Include the reply to msg if present
-    // Reply ID: ${ctx.update.message.reply_to_message ? ctx.update.message.reply_to_message.message_id : 'N/A'}
-    // Reply Text: ${ctx.update.message.reply_to_message ? ctx.update.message.reply_to_message.text : 'N/A'}
-    // Msg Dttm: ${new Date(ctx.update.message.date * 1000).toISOString()}
-    //let replyTo;
-    //if (ctx.update.message.reply_to_message) {
-    //replyTo = ctx.update.message;
-    //}
-    //Reply Dttm: ${ctx.update.message.reply_to_message ? new Date(ctx.update.reply_to_message.date * 1000).toISOString() : 'N/A'}
-    /*newMessageLogging(
-      `${ctx.update.message.from.first_name || ''} ${ctx.update.message.from.last_name || ''} (@${ctx.update.message.from.username}) (${ctx.update.message.from.id})
-Len: ${ctx.update.message.text.length} - Encoded characters: ${detectEncodedCharacters(ctx.update.message.text)} 
-Msg ID: ${ctx.update.message.message_id}
-
-      ----- Message object -----\n
-      ${JSON.stringify(ctx.update.message, null, 5)}
---------------
-${ctx.update.message.text}`
-    );*/
-    newMessageLogging(JSON.stringify(ctx.update.message, null, 5));
 
     // Notify the admin channel if someone uses the string "admin" in their first_name or last_name
     const from = ctx.update.message.from;
@@ -97,7 +78,10 @@ ${ctx.update.message.text}`
     }
 
     // >>> AI CHECK <<<
-    const returnedArray = await handleMessage(ctx.update.message.text);
+    const msg = ctx.update.message.external_reply
+      ? ctx.update.message.quote.text + ' - ' + ctx.update.message.text
+      : ctx.update.message.text;
+    const returnedArray = await handleMessage(msg);
 
     // A common scam is to use Han characters in the name (that are actually a message) and a few meaningless characters in the actual message
     // Cannot contain more than 3 Han characters in first_name or last_name
@@ -146,9 +130,14 @@ ${ctx.update.message.text}`
         .catch((error) => console.error('Error AI admin keyboard response:', error));
 
       // Write the message to disk, used to restore the message later if needed
-      fs.writeFileSync(
+      /*fs.writeFileSync(
         `../telegram-messages/${ctx.update.message.message_id}.json`,
         JSON.stringify(await createMessageDiskObj(ctx))
+      );*/
+      ctx.message.ttl = Date.now();
+      fs.writeFileSync(
+        `../telegram-messages/${ctx.update.message.message_id}.json`,
+        JSON.stringify(ctx.update.message, null, 5)
       );
 
       // Delete the bad user message from the main chat
