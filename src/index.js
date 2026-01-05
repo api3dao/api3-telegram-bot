@@ -77,11 +77,14 @@ bot.on(message('text'), async (ctx) => {
       newMessageAdmin(warn);
     }
 
-    // >>> AI CHECK <<<
-    const msg = ctx.update.message.external_reply
-      ? ctx.update.message.quote.text + ' - ' + ctx.update.message.text
-      : ctx.update.message.text;
-    const returnedArray = await handleMessage(msg);
+    let returnedArray = [];
+
+    // No external replies allowed
+    // External replies are replies to messages from other chats/groups
+    if (ctx.update.message.external_reply) {
+      returnedArray[0] = 'YES';
+      returnedArray[1] = 'External replies are not allowed.';
+    }
 
     // A common scam is to use Han characters in the name (that are actually a message) and a few meaningless characters in the actual message
     // Cannot contain more than 3 Han characters in first_name or last_name
@@ -90,8 +93,11 @@ bot.on(message('text'), async (ctx) => {
       returnedArray[1] = 'Detected excessive (4+) Han characters in first or last name.';
     }
 
+    // >>> AI CHECK <<<
+    if (returnedArray.length === 0) returnedArray = await handleMessage(ctx.update.message.text);
+
     // If AI returnedArray is undefined, there was an error with the LLM call
-    else if (!returnedArray || returnedArray[0] === undefined || returnedArray[1] === undefined) {
+    if (!returnedArray || returnedArray[0] === undefined || returnedArray[1] === undefined) {
       logger.error(`>>> AI returnedArray malformed\n> Msg: ${ctx.update.message.text}\n> returnArray:${returnedArray}`);
       return;
     }
@@ -130,10 +136,6 @@ bot.on(message('text'), async (ctx) => {
         .catch((error) => console.error('Error AI admin keyboard response:', error));
 
       // Write the message to disk, used to restore the message later if needed
-      /*fs.writeFileSync(
-        `../telegram-messages/${ctx.update.message.message_id}.json`,
-        JSON.stringify(await createMessageDiskObj(ctx))
-      );*/
       ctx.message.ttl = Date.now();
       fs.writeFileSync(
         `../telegram-messages/${ctx.update.message.message_id}.json`,
@@ -231,22 +233,6 @@ startActionRestoreMessage();
 startActionBanUser();
 startActionUnbanUser();
 startActionWelcome();
-
-/**
- * Creates a message object to store on disk for later retrieval
- * This message object is used when an admin wants to restore a message that was removed by the AI handler
- * @param {*} ctx
- * @returns
- */
-async function createMessageDiskObj(ctx) {
-  const obj = {
-    message_id: ctx.message.message_id,
-    from: ctx.message.from,
-    text: ctx.message.text,
-    ttl: Date.now()
-  };
-  return obj;
-}
 
 /**
  * Creates the body of the AI notification message to admins
