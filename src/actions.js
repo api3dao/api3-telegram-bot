@@ -263,14 +263,12 @@ async function startActionWelcome() {
       // Remove the msgId for the user from WELCOME_MSG_IDS
       delete WELCOME_MSG_IDS[userId];
 
-      const name = from.first_name || `@${from.username}`;
+      // Dec 2026 wkande, removed the msg after the user proved they are human, too much chatter
+      /*const name = from.first_name || `@${from.username}`;
       newMessageMain(
         `<i>This message will be removed after five minutes.</i>\n-----\nWelcome ${name}! Its great that you are here. You can now send messages to the group. Please read the /chatrules`,
         300000
-      );
-
-      // Output welcome message to main group for a new user
-      // logger.info(`Welcome action completed for user ${name} / ${userId}`);
+      );*/
 
       // Send message to main group
       const reply = `${from.first_name} can now send and read messages.`;

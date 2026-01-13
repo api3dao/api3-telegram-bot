@@ -156,12 +156,13 @@ bot.on(message('text'), async (ctx) => {
         until_date: until_date
       });
 
+      // Dec 2026 wkande, removed this msg, letting the Telegram UI tell the user they are in timeout
       // Reply to user in main group about the timeout from AI check
       // It does no good to add /chatrules to the message as the user is in timeout
-      await newMessageMain(
+      /*await newMessageMain(
         `<i>This message will be removed after one minute.</i>\n-----\nSorry ${ctx.update.message.from.first_name} your post is on hold and in review by an admin.`,
         60000
-      );
+      );*/
 
       // Notify via Pushover about the admin entry
       sendPushNotification(0, `VIOLATION: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
