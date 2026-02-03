@@ -3,7 +3,7 @@ const { Markup } = require('telegraf');
 const { message } = require('telegraf/filters');
 const { handleMessage } = require('./handlers');
 const logger = require('./logger');
-const { newMessageMain, newMessageAdmin, newMessageLogging } = require('./message-queue');
+const { newMessageAdmin, newMessageLogging } = require('./message-queue');
 const { sendPushNotification } = require('./pushover');
 const {
   startActionTimeout24,
@@ -14,6 +14,7 @@ const {
   startActionUnbanUser,
   startActionWelcome
 } = require('./actions');
+const { addFileDb, addDeletedFileDb } = require('./utils/db');
 const { processNewMember } = require('./welcome');
 const { startAllowedLinksCommand, startChatRulesCommand } = require('./commands');
 const fs = require('fs');
@@ -137,10 +138,7 @@ bot.on(message('text'), async (ctx) => {
 
       // Write the message to disk, used to restore the message later if needed
       ctx.message.ttl = Date.now();
-      fs.writeFileSync(
-        `../telegram-messages/${ctx.update.message.message_id}.json`,
-        JSON.stringify(ctx.update.message, null, 5)
-      );
+      await addDeletedFileDb(ctx.update.message);
 
       // Delete the bad user message from the main chat
       // Use promise as the message may already be gone for a host of reasons
@@ -156,20 +154,15 @@ bot.on(message('text'), async (ctx) => {
         until_date: until_date
       });
 
-      // Dec 2026 wkande, removed this msg, letting the Telegram UI tell the user they are in timeout
-      // Reply to user in main group about the timeout from AI check
-      // It does no good to add /chatrules to the message as the user is in timeout
-      /*await newMessageMain(
-        `<i>This message will be removed after one minute.</i>\n-----\nSorry ${ctx.update.message.from.first_name} your post is on hold and in review by an admin.`,
-        60000
-      );*/
-
       // Notify via Pushover about the admin entry
       sendPushNotification(0, `VIOLATION: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
     }
 
     // No violations send an alert to Pushover
     else {
+      // Write message to file-db/telegram for social media daily
+      await addFileDb(ctx.update.message);
+
       sendPushNotification(2, `POSTED: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
     }
   } catch (error) {
@@ -265,15 +258,3 @@ function countHanCharacters(str) {
   const matches = str.match(/\p{Script=Han}/gu);
   return matches ? matches.length : 0;
 }
-
-/**
- * Detect encoded HTML characters in a message
- * @param {*} msg
- * @returns boolean
- */
-/*function detectEncodedCharacters(msg) {
-  const found = msg.match(/&(#?[a-z0-9]+);/gi); // with ; ending
-  const found2 = msg.match(/&(#?[a-z0-9]+)/gi); // without ; ending
-  if (found || found2) return true;
-  return false;
-}*/

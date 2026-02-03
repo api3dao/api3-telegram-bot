@@ -1,6 +1,7 @@
 const { bot } = require('./bot');
 const { newMessageMain, newMessageAdmin } = require('./message-queue');
 const fs = require('fs');
+const { addFileDb } = require('./utils/db');
 const logger = require('./logger');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 // Store of welcome message IDs for users that have joined but need to confirm they are human
@@ -150,6 +151,9 @@ async function startActionRestoreMessage() {
 
       // Clear timeout
       await bot.telegram.restrictChatMember(chatId, userId, { permissions: { can_send_messages: true } });
+
+      // Write message to file-db/telegram for social media daily
+      await addFileDb(msg);
 
       // Send message to admin chat
       const reply = `User (${msg.from.first_name} / ${userId}) message restored and timeout (if any) removed.  The user can send and read messages.`;
