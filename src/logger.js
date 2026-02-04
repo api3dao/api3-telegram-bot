@@ -1,7 +1,4 @@
-const { bot } = require('./bot');
-const fs = require('fs');
 const { sendPushNotification } = require('./pushover');
-const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 
 const log = (level, message) => {
   // Since we now start PM2 using the --time option, timestamps are added automatically
@@ -13,7 +10,7 @@ const log = (level, message) => {
 };
 
 // To prevent runaway logging
-let canPost = true;
+let burst = 0;
 
 module.exports = {
   info: (message) => log('info', message),
@@ -21,22 +18,15 @@ module.exports = {
   error: (message) => {
     log('error', message);
 
-    // Add to Logging group in Telegram and posting to Pushover
-    if (bot && canPost) {
-      // Allow further logging and posting in 10 seconds, prevent excessive logging to logging group and Pushover posting
+    // Send to Pushover
+    if (burst < 5) {
+      burst++;
+      sendPushNotification('ERROR', JSON.stringify(message, null, 5));
+    } else {
+      // Allow further posting in 10 seconds (after the burst), to prevent excessive posting
       setTimeout(() => {
-        canPost = true;
+        burst = 0;
       }, 10000);
-
-      canPost = false;
-
-      // Send to Pushover
-      sendPushNotification(0, 'ERROR', message);
-
-      // Send to logging group
-      bot.telegram
-        .sendMessage(CONFIG.chats.logging, `Logger error for development.\n------------------\n${message}`)
-        .catch((error) => console.error('Logger error:', error));
     }
   }
 };

@@ -20,7 +20,7 @@ const { startAllowedLinksCommand, startChatRulesCommand } = require('./commands'
 const fs = require('fs');
 const CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'))[process.env.NODE_ENV];
 
-sendPushNotification(0, 'STARTUP', `Bot starting in ${process.env.NODE_ENV} mode`);
+sendPushNotification('STARTUP', `Bot starting in ${process.env.NODE_ENV} mode`);
 
 // COMMANDS: Declare commands here before any other event handlers
 startAllowedLinksCommand();
@@ -143,7 +143,10 @@ bot.on(message('text'), async (ctx) => {
       // Delete the bad user message from the main chat
       // Use promise as the message may already be gone for a host of reasons
       ctx.deleteMessage().catch((error) => {
-        logger.error('Error deleting user message (harmless):', error);
+        error._location = 'index.js -> ctx.deleteMessage()';
+        error._message = error.toString();
+        error._message2 = 'Error deleting user message (harmless)';
+        logger.error(error);
       });
 
       // Timeout user 24 hours
@@ -155,7 +158,7 @@ bot.on(message('text'), async (ctx) => {
       });
 
       // Notify via Pushover about the admin entry
-      sendPushNotification(0, `VIOLATION: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
+      sendPushNotification(`VIOLATION: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
     }
 
     // No violations send an alert to Pushover
@@ -163,9 +166,11 @@ bot.on(message('text'), async (ctx) => {
       // Write message to file-db/telegram for social media daily
       await addFileDb(ctx.update.message);
 
-      sendPushNotification(2, `POSTED: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
+      sendPushNotification(`POSTED: ${ctx.update.message.from.first_name}`, ctx.update.message.text);
     }
   } catch (error) {
+    error._location = 'index.js -> bot.on(message(text))';
+    error._message = error.toString();
     logger.error(error);
   }
 });
@@ -210,12 +215,12 @@ bot.launch();
 // The push notifications will only appear in Pushover if running with PM2
 process.once('SIGINT', async () => {
   logger.info('Bot stopping (SIGINT)');
-  await sendPushNotification(0, 'SHUTDOWN:', 'Bot stopping - SIGINT');
+  await sendPushNotification('SHUTDOWN:', 'Bot stopping - SIGINT');
   bot.stop('SIGINT');
 });
 process.once('SIGTERM', async () => {
   logger.info('Bot stopping (SIGTERM)');
-  await sendPushNotification(0, 'SHUTDOWN:', 'Bot stopping - SIGTERM');
+  await sendPushNotification('SHUTDOWN:', 'Bot stopping - SIGTERM');
   bot.stop('SIGTERM');
 });
 

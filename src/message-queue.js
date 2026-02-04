@@ -37,6 +37,8 @@ setInterval(async function () {
       console.log(`>>> QUEUE.length: ${QUEUE.length}`);
     }
   } catch (error) {
+    error._location = 'message-queue.js -> setInterval';
+    error._message = error.toString();
     logger.error(error);
   }
 }, 3000);
