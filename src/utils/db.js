@@ -12,17 +12,20 @@ const { getDateUtcDbFormat } = require('./utc');
 const logger = require('../logger');
 
 /**
- * Adds a new valid file to file-db/telegram
+ * Adds a new valid message to file-db/telegram
  * @param {*} msg
  */
 async function addFileDb(msg) {
   try {
+    // Get today's and yesterday's folder names
+    // Others get deleted to keep the file-db size manageable
     const today = '_db_' + getDateUtcDbFormat();
+    const yesterday = '_db_' + getDateUtcDbFormat(-1);
 
-    // Delete folders other than "today" to keep the file-db size manageable
+    // Delete folders other than "today" and "yesterday" to keep the file-db size manageable
     const files = fs.readdirSync('../file-db/telegram');
     files.forEach((item) => {
-      if (item.indexOf('_db_') === 0 && item !== today) {
+      if (item.indexOf('_db_') === 0 && item !== today && item !== yesterday) {
         fs.rm(`../file-db/telegram/${item}`, { recursive: true, force: true }, (err) => {
           if (err) {
             return console.error(`Error deleting old file-db telegram directory: ${err}`);
@@ -31,13 +34,13 @@ async function addFileDb(msg) {
       }
     });
 
-    // First create the folder structure if it does not exist
+    // First create the today folder structure if it does not exist
     const flag = fs.existsSync(`../file-db/telegram/${today}`);
     if (!flag) {
       fs.mkdirSync(`../file-db/telegram/${today}`, { recursive: false });
     }
 
-    // Now add the file to the folder
+    // Now add the file to the today folder
     fs.writeFileSync(`../file-db/telegram/${today}/${msg.message_id}.json`, JSON.stringify(msg, null, 5));
   } catch (err) {
     logger.error(`Error creating file-db directory: ${err}`);
