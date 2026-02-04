@@ -50,6 +50,8 @@ async function processNewMember(ctx) {
         CONFIG.chats.admin,
         `Failed to welcome ${user.first_name} (${user.username}). Address this issue manually. DM them to be sure they are human, then remove the timeout.`
       );
+      error._location = 'welcome.js -> processNewMember';
+      error._message = error.toString();
       logger.error(error);
     }
   });

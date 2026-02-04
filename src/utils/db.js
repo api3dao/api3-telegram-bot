@@ -42,8 +42,10 @@ async function addFileDb(msg) {
 
     // Now add the file to the today folder
     fs.writeFileSync(`../file-db/telegram/${today}/${msg.message_id}.json`, JSON.stringify(msg, null, 5));
-  } catch (err) {
-    logger.error(`Error creating file-db directory: ${err}`);
+  } catch (error) {
+    error._location = 'db.js -> addFileDb';
+    error._message = error.toString();
+    logger.error(error);
   }
 }
 
@@ -51,8 +53,10 @@ async function addDeletedFileDb(msg) {
   try {
     const fullPath = `../telegram-messages/${msg.message_id}.json`;
     fs.writeFileSync(fullPath, JSON.stringify(msg, null, 5));
-  } catch (err) {
-    logger.error(`Error storing deleted file: ${err}`);
+  } catch (error) {
+    error._location = 'db.js -> addDeletedFileDb';
+    error._message = error.toString();
+    logger.error(error);
   }
 }
 

@@ -39,7 +39,9 @@ async function startActionTimeout24() {
       // Send message to admin chat
       ctx.answerCbQuery(`FAILED`);
       newMessageAdmin(`Set timeout 24 hours FAILED. Please notify bot developer.`);
-      logger.error(error.stack);
+      error._location = 'actions.js -> startActionTimeout24';
+      error._message = error.toString();
+      logger.error(error);
     }
   });
 }
@@ -71,7 +73,9 @@ async function startActionTimeoutForever() {
       // Send message to admin chat
       ctx.answerCbQuery(`FAILED`);
       newMessageAdmin(`Set timeout forever FAILED. Please notify bot developer.`);
-      logger.error(error.stack);
+      error._location = 'actions.js -> startActionTimeoutForever';
+      error._message = error.toString();
+      logger.error(error);
     }
   });
 }
@@ -106,10 +110,14 @@ async function startActionTimeoutClear() {
         // Send message to admin chat
         ctx.answerCbQuery(`FAILED`);
         newMessageAdmin(`Clear timeout FAILED. Please notify bot developer.`);
-        logger.error(error.stack);
+        error._location = 'actions.js -> startActionTimeoutClear';
+        error._message = error.toString();
+        logger.error(error);
       }
     });
   } catch (error) {
+    error._location = 'actions.js -> startActionTimeoutClear -> outer';
+    error._message = error.toString();
     logger.error(error);
   }
 }
@@ -164,7 +172,9 @@ async function startActionRestoreMessage() {
       // Send message to admin chat
       ctx.answerCbQuery(`FAILED`);
       newMessageAdmin(`Restore message FAILED. Please notify bot developer`);
-      logger.error(error.stack);
+      error._location = 'actions.js -> startActionRestoreMessage';
+      error._message = error.toString();
+      logger.error(error);
     }
   });
 }
@@ -198,7 +208,9 @@ async function startActionBanUser() {
       // Send message to admin chat
       ctx.answerCbQuery(`FAILED`);
       newMessageAdmin(`User ban FAILED. Please notify bot developer.`);
-      logger.error(error.stack);
+      error._location = 'actions.js -> startActionBanUser';
+      error._message = error.toString();
+      logger.error(error);
     }
   });
 }
@@ -233,7 +245,9 @@ async function startActionUnbanUser() {
       // Send message to admin chat
       ctx.answerCbQuery(`FAILED`);
       newMessageAdmin(`User kick FAILED. Please notify bot developer.`);
-      logger.error(error.stack);
+      error._location = 'actions.js -> startActionUnbanUser';
+      error._message = error.toString();
+      logger.error(error);
     }
   });
 }
@@ -278,9 +292,9 @@ async function startActionWelcome() {
       const reply = `${from.first_name} can now send and read messages.`;
       ctx.answerCbQuery(reply);
     } catch (error) {
-      // Log error
-      logger.error(error.message);
-      logger.error(error.stack);
+      error._location = 'actions.js -> startActionWelcome';
+      error._message = error.toString();
+      logger.error(error);
     }
   });
 }
