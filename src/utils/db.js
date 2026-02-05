@@ -41,7 +41,14 @@ async function addFileDb(msg) {
     }
 
     // Now add the file to the today folder
-    fs.writeFileSync(`../file-db/telegram/${today}/${msg.message_id}.json`, JSON.stringify(msg, null, 5));
+    // Keys for api3-social-media
+    let msgSummary = {};
+    msgSummary._date = msg.date * 1000; // Add milliseconds to date
+    msgSummary._username = msg.from.username ? `@${msg.from.username}` : '-unknown-';
+    msgSummary._text = msg.text ? msg.text : '';
+    msgSummary._community = 'telegram';
+
+    fs.writeFileSync(`../file-db/telegram/${today}/${msg.message_id}.json`, JSON.stringify(msgSummary, null, 5));
   } catch (error) {
     error._location = 'db.js -> addFileDb';
     error._message = error.toString();
