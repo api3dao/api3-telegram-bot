@@ -62,8 +62,9 @@ bot.on(message('text'), async (ctx) => {
     // Log all messages to Api3 Logging group
     newMessageLogging(JSON.stringify(ctx.update.message, null, 5));
 
-    // If the user has immunity, skip processing
+    // If the user has immunity, write message to file-db/telegram for social media daily, skip processing
     if (CONFIG.immunity.includes(ctx.update.message.from.username)) {
+      await addFileDb(ctx.update.message);
       return;
     }
 
