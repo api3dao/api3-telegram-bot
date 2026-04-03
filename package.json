@@ -4,6 +4,10 @@
   "description": "Api3 Telegram bot",
   "license": "UNLICENSED",
   "main": "src/index.js",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "pnpm": "^10.33.0"
+  },
   "scripts": {
     "lint": "pnpm prettier:check && eslint . --ext .js,ts",
     "prettier": "prettier --write \"./**/*.{js,ts,md,json,json.example}\"",
