@@ -80,7 +80,7 @@ bot.on(message('text'), async (ctx) => {
     }
 
     let returnedArray = [];
-    console.log(ctx.update.message);
+
     // No external replies allowed
     // External replies are replies to messages from other chats/groups
     if (ctx.update.message.external_reply) {
