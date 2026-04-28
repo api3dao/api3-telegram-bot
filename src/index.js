@@ -80,12 +80,18 @@ bot.on(message('text'), async (ctx) => {
     }
 
     let returnedArray = [];
-
+    console.log(ctx.update.message);
     // No external replies allowed
     // External replies are replies to messages from other chats/groups
     if (ctx.update.message.external_reply) {
       returnedArray[0] = 'YES';
       returnedArray[1] = 'External replies are not allowed.';
+    }
+    // No forwarded origins allowed
+    // Forwarded origins are messages that are forwarded from other chat/groups
+    else if (ctx.update.message.forward_origin) {
+      returnedArray[0] = 'YES';
+      returnedArray[1] = 'Forwarded origins are not allowed.';
     }
 
     // A common scam is to use Han characters in the name (that are actually a message) and a few meaningless characters in the actual message
